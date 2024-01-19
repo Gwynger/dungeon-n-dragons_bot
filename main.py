@@ -1,7 +1,9 @@
 import logging
+import asyncio
 from dotenv import dotenv_values
 import handlers.bestiary_search
 from bot import dp
+from bot import bot
 from database.db import create_if_not_exist
 from handlers import (
     create_char,
@@ -14,7 +16,6 @@ from handlers import (
 )
 from handlers.statistics import on_csv_button, stats_command
 from utils.masterdata import load_beasts, load_feats, load_spells
-from aiogram import types
 
 ENV = dotenv_values('.env')
 ADMIN_ID = ENV['ADMIN_ID']
@@ -26,8 +27,8 @@ beast_cards = load_beasts('utils/beasts.json')
 logging.info('Spells, feats and beasts loaded')
 
 
-def register_handlers_for_dp(dp):
-    dp.register_message_handler(start.start_message, commands=['start'])
+def register_handlers(dp):
+    dp.register_message_handler(start.start_message, commands=['/start'])
     dp.register_message_handler(start.help_message, commands=['help'])
     dp.register_message_handler(next_game.set_game, commands=['set'])
     dp.register_message_handler(next_game.get_game, commands=['game'])
@@ -69,6 +70,9 @@ def register_handlers_for_dp(dp):
     dp.register_message_handler(roll.dice_roll)  # should be the last one, because it has a catch-all handler
 
 
-if __name__ == '__main__':
-    register_handlers_for_dp(dp)
-    dp.start_polling(skip_updates=False)
+
+async def main():
+    await dp.start_polling(bot)
+
+if __name__ == "__main__":
+    asyncio.run(main())
